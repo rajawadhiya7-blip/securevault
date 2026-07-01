@@ -20,12 +20,13 @@ public class AuthService {
         if (userRepository.existsByEmail(request.getEmail())) {
             return "Email already in use";
         }
-
+        if (userRepository.existsByUsername(request.getUsername())) {
+            return "Username already taken";
+        }
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-
         userRepository.save(user);
         return "User registered successfully";
     }
