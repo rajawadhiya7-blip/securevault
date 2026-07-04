@@ -1,5 +1,6 @@
 package com.securevault.securevault.controller;
 
+import com.securevault.securevault.dto.LoginRequest;
 import com.securevault.securevault.dto.RegisterRequest;
 import com.securevault.securevault.service.AuthService;
 import org.springframework.web.bind.annotation.*;
@@ -17,5 +18,10 @@ public class AuthController {
     @PostMapping("/register")
     public String register(@RequestBody RegisterRequest request) {
         return authService.register(request);
+    }
+
+    @PostMapping("/login")
+    public String login(@RequestBody LoginRequest request) {
+        return authService.login(request);
     }
 }
