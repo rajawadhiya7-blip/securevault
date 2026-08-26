@@ -1,4 +1,5 @@
 package com.securevault.securevault.model;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
@@ -28,6 +29,9 @@ public class User {
     @Column(nullable = false)
     private int failedLoginAttempts = 0;
 
+    @Column
+    private LocalDateTime lockTime;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -48,4 +52,7 @@ public class User {
 
     public int getFailedLoginAttempts() { return failedLoginAttempts; }
     public void setFailedLoginAttempts(int failedLoginAttempts) { this.failedLoginAttempts = failedLoginAttempts; }
+
+    public LocalDateTime getLockTime() { return lockTime; }
+    public void setLockTime(LocalDateTime lockTime) { this.lockTime = lockTime; }
 }
