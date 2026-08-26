@@ -4,6 +4,7 @@ import com.securevault.securevault.dto.LoginRequest;
 import com.securevault.securevault.dto.RegisterRequest;
 import com.securevault.securevault.service.AuthService;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -16,16 +17,16 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String register(@RequestBody RegisterRequest request) {
+    public String register( @Valid @RequestBody RegisterRequest request) {
         return authService.register(request);
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest request) {
+    public String login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
     }
     @PostMapping("/register-admin")
-    public String registerAdmin(@RequestBody RegisterRequest request) {
+    public String registerAdmin(@Valid @RequestBody RegisterRequest request) {
         return authService.registerAdmin(request);
     }
 }
