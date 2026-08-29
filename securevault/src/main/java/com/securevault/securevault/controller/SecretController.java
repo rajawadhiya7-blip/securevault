@@ -9,7 +9,9 @@ import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
+@Tag(name = "2. Secrets", description = "Secret management endpoints")
 @RestController
 @RequestMapping("/api/secrets")
 public class SecretController {

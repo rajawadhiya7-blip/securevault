@@ -6,6 +6,9 @@ import com.securevault.securevault.service.AuthService;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "1. Authentication", description = "Register and login endpoints")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
