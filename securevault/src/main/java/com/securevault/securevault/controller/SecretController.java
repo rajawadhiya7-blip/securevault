@@ -1,15 +1,18 @@
 package com.securevault.securevault.controller;
 
+import com.securevault.securevault.model.AuditLog;
 import com.securevault.securevault.model.Secret;
+import com.securevault.securevault.service.AuditLogService;
 import com.securevault.securevault.service.SecretService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "2. Secrets", description = "Secret management endpoints")
 @RestController
@@ -17,28 +20,32 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class SecretController {
 
     private final SecretService secretService;
+    private final AuditLogService auditLogService;
 
-    public SecretController(SecretService secretService) {
+    public SecretController(SecretService secretService,
+                            AuditLogService auditLogService) {
         this.secretService = secretService;
+        this.auditLogService = auditLogService;
     }
 
     @PostMapping
     public ResponseEntity<?> createSecret(
             @RequestBody Map<String, String> request,
-            Principal principal) {
+            Principal principal,
+            HttpServletRequest httpRequest) {
 
         String name = request.get("name");
         String value = request.get("value");
         String type = request.get("type");
         String expiresAtStr = request.get("expiresAt");
-
         LocalDateTime expiresAt = expiresAtStr != null ?
                 LocalDateTime.parse(expiresAtStr) : null;
 
         try {
             Secret secret = secretService.createSecret(
                     name, value, type,
-                    principal.getName(), expiresAt);
+                    principal.getName(), expiresAt,
+                    httpRequest.getRemoteAddr());
 
             return ResponseEntity.ok(Map.of(
                     "id", secret.getId(),
@@ -52,9 +59,12 @@ public class SecretController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getUserSecrets(Principal principal) {
+    public ResponseEntity<List<Map<String, Object>>> getUserSecrets(
+            Principal principal,
+            HttpServletRequest httpRequest) {
 
-        List<Secret> secrets = secretService.getUserSecrets(principal.getName());
+        List<Secret> secrets = secretService.getUserSecrets(
+                principal.getName(), httpRequest.getRemoteAddr());
 
         List<Map<String, Object>> response = secrets.stream()
                 .map(s -> Map.of(
@@ -73,10 +83,12 @@ public class SecretController {
     @GetMapping("/{id}/decrypt")
     public ResponseEntity<?> getDecryptedSecret(
             @PathVariable Long id,
-            Principal principal) {
+            Principal principal,
+            HttpServletRequest httpRequest) {
 
         try {
-            String value = secretService.getDecryptedSecret(id, principal.getName());
+            String value = secretService.getDecryptedSecret(
+                    id, principal.getName(), httpRequest.getRemoteAddr());
             return ResponseEntity.ok(Map.of("value", value));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -87,12 +99,13 @@ public class SecretController {
     public ResponseEntity<?> updateSecret(
             @PathVariable Long id,
             @RequestBody Map<String, String> request,
-            Principal principal) {
+            Principal principal,
+            HttpServletRequest httpRequest) {
 
         try {
             Secret updated = secretService.updateSecret(
                     id, request.get("value"),
-                    principal.getName());
+                    principal.getName(), httpRequest.getRemoteAddr());
 
             return ResponseEntity.ok(Map.of(
                     "id", updated.getId(),
@@ -107,13 +120,20 @@ public class SecretController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteSecret(
             @PathVariable Long id,
-            Principal principal) {
+            Principal principal,
+            HttpServletRequest httpRequest) {
 
         try {
-            secretService.deleteSecret(id, principal.getName());
+            secretService.deleteSecret(id, principal.getName(),
+                    httpRequest.getRemoteAddr());
             return ResponseEntity.ok(Map.of("message", "Secret deleted successfully"));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @GetMapping("/audit-logs")
+    public ResponseEntity<List<AuditLog>> getMyAuditLogs(Principal principal) {
+        return ResponseEntity.ok(auditLogService.getUserLogs(principal.getName()));
     }
 }
